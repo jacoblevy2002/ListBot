@@ -43,3 +43,10 @@ Unless otherwise specified, anything involving finding text (such as +add <code>
 	- DMs the user the list, leaving markdown intact.
 - help
 	- Sends a help menu to the current channel, listing all commands.
+
+## Future Plans
+- Transition to slash commands
+	- Using <code>/</code> instead of <code>+</code> as a command prefix, per Discord's new(-ish) addition
+- Add <code>addabove</code> command
+	- Two arguments; <code>LINE_TO_ADD</code> and <code>ADD_ABOVE</code>
+	- Adds <code>LINE_TO_ADD</code> above the line beginning with <code>ADD_ABOVE</code>
