@@ -13,40 +13,52 @@ Unless otherwise specified, anything involving finding text (such as +add <code>
 - add <code>arg1</code>
     - Adds <code>arg1</code> to the end of the list.
 - add <code>arg1 arg2</code>
-    - Adds <code>arg1</code> to the list as a new line under <code>arg2</code>. Adding <code>true</code> to the command will only match full lines.
+    - Adds <code>arg1</code> to the list as a new line under <code>arg2</code>. By default, only works if <code>arg2</code> is present in the list once. Has additional optional arguments:
+      - <code>-full</code> or <code>-f</code>: <code>arg2</code> matches will only match full lines.
+      - <code>-above</code> or <code>-aa</code> : <code>arg1</code> will be added above <code>arg2</code>, rather than below.
+      - <code>-all</code>: <code>arg1</code> will be added under all matches of <code>arg2</code>, no matter how many are found.
 - addundernum <code>num arg1</code>
-	- Adds <code>arg1</code> to the list as a new line under line number <code>num</code>.
+  - Adds <code>arg1</code> to the list as a new line under line number <code>num</code>.
 - getnumlines
-	- Returns the number of lines in this channel's list.
+  - Returns the number of lines in this channel's list.
 - remove <code>arg1</code>
-	- Removes a line beginning with <code>arg1</code>. Will only succeed if there's one match. Adding <code>true</code> to the command will only match full lines.
+  - Removes a line beginning with <code>arg1</code>. By default, only succeeds if there's only one match. Has additional optional arguments:
+    - <code>-full</code> or <code>-f</code>: Only full line matches will be removed.
+    - <code>-all</code> or <code>-a</code>: All matches will be removed.
 - clear
-	- Clears this channel's list. Adding <code>status</code> will instruct it to only delete status messages (help menu, errors, etc), and adding <code>all</code> will instruct it to delete both list and status messages
-- removemore <code>arg1</code>
-	- Removes all lines beginning with <code>arg1</code>. Adding <code>true</code> to the command will only match full lines.
+  - Clears this channel's list. Has additional optional arguments:
+    - <code>-status</code> or <code>-s</code>: Only remove status messages (help menu, errors, etc).
+    - <code>-all</code> or <code>-a</code>: Remove lists and status messages.
 - removenum <code>num</code>
-	- Removes the line at the specified number.
+  - Removes the line at the specified number.
 - removewhite
-	- Removes empty lines.
+  - Removes empty lines.
 - replace <code>arg1</code> <code>arg2</code>
-	- Replaces the line matching <code>arg1</code> with <code>arg2</code>. Fails if there are multiple matches, and accepts <code>true</code> full-line argument.
-- replaceall <code>arg1</code> <code>arg2</code>
-	- Replaces all instances of <code>arg1</code> with <code>arg2</code>, no matter where they occur. Think using <code>CTRL + F</code> to replace all.
+  - Replaces the line matching <code>arg1</code> with <code>arg2</code>. By default, only succeeds if there's only one matches. Has additional optional arguments:
+    - <code>-full</code> or <code>-f</code>: Only full line matches will be replaced.
+    - <code>-all</code> or <code>-a</code>: All matches will be replaced.
 - replaceallincategory <code>arg1</code> <code>arg2</code>
-	- Runs a replaceall command in every channel in the current category, and summarizes which channels had matches. Note that this can get spammy in large categories.
+  - Runs a replaceall command in every channel in the current category, and summarizes which channels had matches. Note that this can get spammy in large categories.
 - replacenum <code>num</code> <code>arg1</code>
-	- Replaces the line at the specified content with <code>arg1</code>.
+  - Replaces the line at the specified content with <code>arg1</code>.
 - raw
-	- DMs the user the raw list, escaping markdown elements.
-		- For example, **__Example__** would become \*\*\_\_Example\_\_\*\*
+  - DMs the user the raw list, escaping markdown elements.
+  	- For example, **__Example__** would become \*\*\_\_Example\_\_\*\*
+  	- The full list of escaped characters is as follows:
+  	  - \
+  	  - _
+  	  - *
+  	  - ~
+  	  - :
+  	  - |
+  	  - "
+  	  - \>
+  	  - `
 - dm
-	- DMs the user the list, leaving markdown intact.
+  - DMs the user the list, leaving markdown intact.
 - help
-	- Sends a help menu to the current channel, listing all commands.
+  - Sends a help menu to the current channel, listing all commands.
 
 ## Future Plans
 - Transition to slash commands
 	- Using <code>/</code> instead of <code>+</code> as a command prefix, per Discord's new(-ish) addition
-- Add <code>addabove</code> command
-	- Two arguments; <code>LINE_TO_ADD</code> and <code>ADD_ABOVE</code>
-	- Adds <code>LINE_TO_ADD</code> above the line beginning with <code>ADD_ABOVE</code>

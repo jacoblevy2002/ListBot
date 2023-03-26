@@ -31,40 +31,58 @@ async def msgOver2000(msg, channel):
 	  
     await channel.send("\n".join(checkedLines))
 
-async def SendList(channel, botMessages, toAdd = "", toFind = "", removeOrReplace : bool = False, fullLineCheck : bool = False, removeAllMatches : bool = False, indexToAdd : int = -1, replaceAll : bool = False, indexToChange : int = -1):
+def set_saveTo(saveTo, val):
+  if isinstance(saveTo, int):
+    return val
+  elif isinstance(saveTo, list):
+    saveTo.append(val)
+    return saveTo
+  else: return -1
+
+async def SendList(channel, botMessages, toAdd = "", toFind = "",
+                   removeOrReplace : bool = False, fullLineCheck : bool = False, add_above : bool = False,
+                   indexToAdd : int = -1, replaceAll : bool = False, indexToChange : int = -1, allow_multiple_matches : bool = False
+                   ):
   print("SendList called")
   totalList = []
   for i in botMessages:
     totalList.extend(i.content.split("\n"))
     
   if (toFind != "" and not replaceAll) or fullLineCheck:     # if toFind is not empty - ie add part way through
-    saveTo = -1                         # default value of -1 - it can never be inserted to -1 in a msg
+    saveTo = [] if allow_multiple_matches else -1 # default value of -1 or empty list - it can never be inserted to -1 in a msg
     x = -1                              # starts at -1 so that first value is 0
     for i in range(len(totalList)):            # for each line in list
       x += 1      # in python it seems you cant manually change i for some reason? so im using a counter x instead
       match = totalList[x].startswith(toFind) if not fullLineCheck else totalList[x] == toFind
       if match:                           # if current line is the one to add under / replace
-        if removeAllMatches:              # whether or not to remove all matches found. Overrides everything else
-          totalList.pop(x)
-          x = x - 1
-        elif saveTo == -1:                # if 0 then first match
-          saveTo = x + 1                  # set saveTo to the save index
+        if saveTo == -1 or allow_multiple_matches:                # if -1 then first match
+          saveTo = set_saveTo(saveTo, x + 1)      # set saveTo to the save index
         else:
           await channel.send("ERROR: Multiple matches found")
           return
-    
-    if not removeAllMatches:      # if not removing all matches - ie if change specific line
-      if saveTo == -1:
-        await channel.send("ERROR: No matches found")
-        return
+        
       
-      if removeOrReplace:
-        if toAdd == "":
-          totalList.pop(saveTo - 1)
-        else:
-          totalList[saveTo - 1] = toAdd
+    if removeOrReplace:
+      if toAdd == "":
+        if isinstance(saveTo, int): totalList.pop(saveTo - 1)
+        elif isinstance(saveTo, list):
+          for ind in saveTo:
+            print(ind)
+            totalList.pop(ind - 1)
+            for i in range(len(saveTo)): saveTo[i] -= 1
       else:
-        totalList.insert(saveTo, toAdd)
+        if isinstance(saveTo, int): totalList[saveTo - 1] = toAdd
+        elif isinstance(saveTo, list):
+          for ind in saveTo:
+            totalList[saveTo - 1] = toAdd
+            for i in range(len(saveTo)): saveTo[i] -= 1
+    else:
+      if isinstance(saveTo, int): totalList.insert(saveTo, toAdd)
+      elif isinstance(saveTo, list):
+        for ind in saveTo:
+          if add_above: totalList.insert(ind - 1, toAdd)
+          else: totalList.insert(ind, toAdd)
+          for i in range(len(saveTo)): saveTo[i] += 1
       
   else:
     if not indexToAdd == -1:                  # if insert at custom number
@@ -130,33 +148,79 @@ async def on_command_error(ctx, error):
 
 @bot.command()
 async def help(ctx):
-  await ctx.send("**__ListBot Help Menu P1:__**\nTo trigger any ListBot commands, begin your message with the `+` symbol\n\nNOTE: To use any multi-word arguments, they MUST be wrapped in \". To use `\"` inside an argument, put a `\\` backslash before it, ie `\\\"`\n\n**Commands:**\n`add ARGUMENT1`: Adds `ARGUMENT1` to the end of this channel's list. If there is no list, it will create a new one. Adding a second argument will specify what line it should be added under (will only accept 1 match, looks at beginning of line). Adding \"true\" as a third argument will tell it to match with an entire line only.\n`addundernum NUM ARGUMENT`: Adds `ARGUMENT` under line #`NUM`.\n`getnumlines`: Replies with the number of lines in the list\n`remove ARGUMENT1`: Removes the line beginning with `ARGUMENT1`. Will only remove one line, and fails if more than one line matches the specified `ARGUMENT1`. Adding \"true\" as a second argument will only match with full line matches.\n`clear`: Clears this channel's list. Adding \"status\" as an argument will make it only delete status messages (help menu, errors, etc), and adding \"all\" as an argument will make it delete all ListBot messages in the channel.\n`removemore ARGUMENT`: Like remove, but deletes all matches. Accepts full line specification\n`removenum NUM`: Removes the line at the specified number\n`removewhite`: Removes empty lines\n`replace ARGUMENT1 ARGUMENT2`: Replaces `ARGUMENT1` with `ARGUMENT2`. `ARGUMENT1` matches for the beginning of a line, and the command fails if there are multiple matches. Accepts full line specification")
-  await ctx.send("**__ListBot Help Menu P2:__**\n`replaceall ARGUMENT1 ARGUMENT2`: Replaces all matches of `ARGUMENT1` with `ARGUMENT2` in the list, without any checks. Think using `CTRL + F` to replace all\n`replaceallincategory ARGUMENT1 ARGUMENT2`: Runs a `replaceall` in every channel in the current category, and summarizes which ones found a match. WARNING: Can get spammy\n`replacenum NUM, ARG1`: Replaces the line at the specified number with the given `ARG1`\n`raw`: DMs user the raw list, escaping markdown (ie, \"**__Example__**\" would display as \*\*\*\_\_Example\_\_\*\*\*\")\n`dm`: DMs the user the list, leaving markdown intact")
+  await ctx.send("""**__ListBot Help Menu P1:__**
+To trigger any ListBot commands, begin your message with the `+` symbol
+  
+NOTE: To use any multi-word arguments, they MUST be wrapped in ". To use `"` inside an argument, put a `\` backslash before it, ie `\"`
+  
+**Commands:**
+`add ARGUMENT1`: Adds `ARGUMENT1` to the end of this channel's list. If there is no list, it will create a new one. Adding a second argument will specify what line it should be added under (by default will only accept 1 match, looking at the beginning of line).
+  Further arguments can be added, as listed here:
+    "-full" or "-f": Matches will only respond to full lines
+    "-above" or "-aa": The line will be added above the match instead of below
+    "-all": The line will be added under all matches
+`addundernum NUM ARGUMENT`: Adds `ARGUMENT` under line #`NUM`.
+`getnumlines`: Replies with the number of lines in the list
+`remove ARGUMENT1`: Removes the line beginning with `ARGUMENT1`. Will only remove one line, and fails if more than one line matches the specified `ARGUMENT1`. Adding "true" as a second argument will only match with full line matches.
+  Further arguments can be added, as listed here:
+    "-full" or "-f": Matches will only respond to full lines
+    "-all" or "-a": All matches will be removed
+`clear`: Clears this channel's list.
+  Further arguments can be added to specify clear details:
+    "-status" or "-s": Delete status messages (help menu, errors, etc)
+    "-all" or "-a": Delete all ListBot messages.
+`removenum NUM`: Removes the line at the specified number
+`removewhite`: Removes empty lines
+`replace ARGUMENT1 ARGUMENT2`: Replaces `ARGUMENT1` with `ARGUMENT2`. `ARGUMENT1` matches for the beginning of a line, and the command fails if there are multiple matches. Accepts full line specification
+  Further arguments can be added, as listed here:
+    "-full" or "-f": Matches will only respond to full lines
+    "-all" or "-a": All matches will be removed"""
+                 )
+  await ctx.send("""**__ListBot Help Menu P2:__**
+`replaceallincategory ARGUMENT1 ARGUMENT2`: Runs a `replaceall` in every channel in the current category, and summarizes which ones found a match. WARNING: Can get spammy
+`replacenum NUM, ARG1`: Replaces the line at the specified number with the given `ARG1`
+`raw`: DMs user the raw list, escaping markdown (ie, "**__Example__**" would display as "\*\*\*\_\_Example\_\_\*\*\*"). List of markdown symbols that are escaped is (`\, _, *, ~, :, |, ", >`, \`)
+`dm`: DMs the user the list, leaving markdown intact"""
+                 )
 
 @bot.command()
-async def add(ctx, arg1, arg2 = "", arg3 : bool = False):
-  await SendList(ctx, await FindAllBotMessages(ctx.channel), toAdd = arg1, toFind = arg2, fullLineCheck = arg3)
+async def add(ctx, arg1, *args):
+  keywords = ["-full", "-f", "-above", "-aa", "-all"]
+  key = False
+  to_find = ""
+  if args:
+    for k in keywords:
+      if k == args[0]:
+        key = True
+        break
+    to_find = args[0] if not key else ""
+  match_full = "-full" in args or "-f" in args
+  add_above = "-above" in args or "-aa" in args
+  allow_multiple = "-all" in args
+  await SendList(ctx, await FindAllBotMessages(ctx.channel), toAdd = arg1, toFind = to_find, fullLineCheck = match_full, add_above = add_above, allow_multiple_matches = allow_multiple)
 
 @bot.command()
-async def remove(ctx, arg1, arg2 : bool = False):
-  await SendList(ctx, await FindAllBotMessages(ctx.channel), toFind = arg1, removeOrReplace = True, fullLineCheck = arg2)
+async def remove(ctx, arg1, *args):
+  match_full = "-full" in args or "-f" in args
+  allow_multiple = "-all" in args or "-a" in args
+  await SendList(ctx, await FindAllBotMessages(ctx.channel), toFind = arg1, removeOrReplace = True, fullLineCheck = match_full, allow_multiple_matches = allow_multiple)
 
 @bot.command()
 async def clear(ctx, arg1 : str = "list"):
   arg1 = arg1.lower()
+  if arg1 == "-status" or arg1 == "-s": arg1 = "status"
+  if arg1 == "-all" or arg1 == "-a": arg1 = "all"
   await DeleteMsgs(await FindAllBotMessages(ctx.channel, clearWhat = arg1))
 
 @bot.command()
-async def removemore(ctx, arg1, arg2 : bool = False):
-  await SendList(ctx, await FindAllBotMessages(ctx.channel), toFind = arg1, removeAllMatches = True, fullLineCheck = arg2)
-
-@bot.command()
 async def removewhite(ctx):
-  await SendList(ctx, await FindAllBotMessages(ctx.channel), toFind = "", fullLineCheck = True, removeAllMatches = True)
+  await SendList(ctx, await FindAllBotMessages(ctx.channel), toFind = "", fullLineCheck = True, allow_multiple_matches = True, removeOrReplace = True)
   
 @bot.command()
-async def replace(ctx, arg1, arg2, arg3 : bool = False):
-  await SendList(ctx, await FindAllBotMessages(ctx.channel), toAdd = arg2, toFind = arg1, removeOrReplace = True, fullLineCheck = arg3)
+async def replace(ctx, arg1, arg2, *args):
+  match_full = "-full" in args or "-f" in args
+  allow_multiple = "-all" in args or "-a" in args
+  await SendList(ctx, await FindAllBotMessages(ctx.channel), toAdd = arg2, toFind = arg1, removeOrReplace = True, fullLineCheck = match_full, allow_multiple_matches = allow_multiple)
 
 @bot.command()
 async def replacenum(ctx, arg1 : int, arg2):
@@ -179,7 +243,8 @@ async def dm(ctx):
 async def raw(ctx):
   myMessages = await FindAllBotMessages(ctx.channel)
   for x in myMessages:
-    toSend = x.content.replace("\\", "\\\\").replace("_", "\_").replace("*", "\*").replace("~", "\~").replace("`", "\`").replace(":", "\:").replace("|", "\|").replace('"', '\\\\"')
+    toSend = x.content.replace("\\", "\\\\").replace("_", "\_").replace("*", "\*").replace("~", "\~").replace("`", "\`").replace(":", "\:").replace("|", "\|").replace('"', '\\\\"').replace('\n>', '\n\>')
+    if toSend.startswith(">"): toSend = '\\' + toSend
     if len(toSend) > MESSAGE_LENGTH: # Not technically required, but it's faster to perform an if statement then run the function for no reason
       await msgOver2000(toSend, ctx.author)
     else:
