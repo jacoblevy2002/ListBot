@@ -19,7 +19,7 @@ async def on_ready():
   print("We have logged in as {0.user}".format(bot))
 
 async def msgOver2000(msg, channel):
-  print("msgOver2000 Called")
+  #print("msgOver2000 Called")
   lines = msg.split("\n")
           
   while not lines == []:
@@ -43,7 +43,7 @@ async def SendList(channel, botMessages, toAdd = "", toFind = "",
                    removeOrReplace : bool = False, fullLineCheck : bool = False, add_above : bool = False,
                    indexToAdd : int = -1, replaceAll : bool = False, indexToChange : int = -1, allow_multiple_matches : bool = False
                    ):
-  print("SendList called")
+  #print("SendList called")
   totalList = []
   for i in botMessages:
     totalList.extend(i.content.split("\n"))
@@ -67,7 +67,6 @@ async def SendList(channel, botMessages, toAdd = "", toFind = "",
         if isinstance(saveTo, int): totalList.pop(saveTo - 1)
         elif isinstance(saveTo, list):
           for ind in saveTo:
-            print(ind)
             totalList.pop(ind - 1)
             for i in range(len(saveTo)): saveTo[i] -= 1
       else:
@@ -111,7 +110,7 @@ async def DeleteMsgs(messages):
 	  await i.delete()
  
 async def FindAllBotMessages(ctx : discord.TextChannel, clearWhat : str = "list"):
-  print("FindAllBotMessages called")
+  #print("FindAllBotMessages called")
   mine = []
   #m = await ctx.history()
   #messages = m.flatten()
@@ -129,7 +128,7 @@ async def FindAllBotMessages(ctx : discord.TextChannel, clearWhat : str = "list"
 
     if match:
       mine.append(x)
-  print("Done looking")
+  #print("Done looking")
   return mine[::-1]
 
 def GetLinesInList(myMessages):
@@ -151,30 +150,30 @@ async def help(ctx):
   await ctx.send("""**__ListBot Help Menu P1:__**
 To trigger any ListBot commands, begin your message with the `+` symbol
   
-NOTE: To use any multi-word arguments, they MUST be wrapped in ". To use `"` inside an argument, put a `\` backslash before it, ie `\"`
+NOTE: To use any multi-word arguments, they MUST be wrapped in ". To use `"` inside an argument, put a `\` backslash before it, ie `\\"`
   
 **Commands:**
 `add ARGUMENT1`: Adds `ARGUMENT1` to the end of this channel's list. If there is no list, it will create a new one. Adding a second argument will specify what line it should be added under (by default will only accept 1 match, looking at the beginning of line).
   Further arguments can be added, as listed here:
-    "-full" or "-f": Matches will only respond to full lines
-    "-above" or "-aa": The line will be added above the match instead of below
-    "-all": The line will be added under all matches
+    `-full` or `-f`: Matches will only respond to full lines
+    `-above` or `-aa`: The line will be added above the match instead of below
+    `-all`: The line will be added under all matches
 `addundernum NUM ARGUMENT`: Adds `ARGUMENT` under line #`NUM`.
 `getnumlines`: Replies with the number of lines in the list
 `remove ARGUMENT1`: Removes the line beginning with `ARGUMENT1`. Will only remove one line, and fails if more than one line matches the specified `ARGUMENT1`. Adding "true" as a second argument will only match with full line matches.
   Further arguments can be added, as listed here:
-    "-full" or "-f": Matches will only respond to full lines
-    "-all" or "-a": All matches will be removed
+    `-full` or `-f`: Matches will only respond to full lines
+    `-all` or `-a`: All matches will be removed
 `clear`: Clears this channel's list.
   Further arguments can be added to specify clear details:
-    "-status" or "-s": Delete status messages (help menu, errors, etc)
-    "-all" or "-a": Delete all ListBot messages.
+    `-status` or `-s`: Delete status messages (help menu, errors, etc)
+    `-all` or `-a`: Delete all ListBot messages.
 `removenum NUM`: Removes the line at the specified number
 `removewhite`: Removes empty lines
 `replace ARGUMENT1 ARGUMENT2`: Replaces `ARGUMENT1` with `ARGUMENT2`. `ARGUMENT1` matches for the beginning of a line, and the command fails if there are multiple matches. Accepts full line specification
   Further arguments can be added, as listed here:
-    "-full" or "-f": Matches will only respond to full lines
-    "-all" or "-a": All matches will be removed"""
+    `-full` or `-f`: Matches will only respond to full lines
+    `-all` or `-a`: All matches will be removed"""
                  )
   await ctx.send("""**__ListBot Help Menu P2:__**
 `replaceallincategory ARGUMENT1 ARGUMENT2`: Runs a `replaceall` in every channel in the current category, and summarizes which ones found a match. WARNING: Can get spammy
@@ -292,7 +291,7 @@ async def replaceallincategory(ctx, arg1, arg2):
   notChannels = []
   
   for x in category.channels:
-    print("Starting channel " + x.name)
+    #print("Starting channel " + x.name)
     myMessages = await FindAllBotMessages(x)
     testStr = "\n".join(i.content for i in myMessages)
     if arg1 in testStr:
