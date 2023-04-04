@@ -47,7 +47,7 @@ Unless otherwise specified, anything involving finding text (such as +add <code>
   	- The full list of escaped characters is as follows:
   	  - \
   	  - _
-  	  - *
+  	  - \*
   	  - ~
   	  - :
   	  - |
