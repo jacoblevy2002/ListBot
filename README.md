@@ -41,21 +41,19 @@ Unless otherwise specified, anything involving finding text (such as +add <code>
   - Runs a replaceall command in every channel in the current category, and summarizes which channels had matches. Note that this can get spammy in large categories.
 - replacenum <code>num</code> <code>arg1</code>
   - Replaces the line at the specified content with <code>arg1</code>.
-- raw
-  - DMs the user the raw list, escaping markdown elements.
-  	- For example, **__Example__** would become \*\*\_\_Example\_\_\*\*
-  	- The full list of escaped characters is as follows:
-  	  - \
-  	  - _
-  	  - \*
-  	  - ~
-  	  - :
-  	  - |
-  	  - "
-  	  - \>
-  	  - `
+- effect <code>arg1</code> <code>options</code>
+  - Applies an effect to the given <code>arg1</code> text. The options are:
+    - <code>-bold</code> or <code>-b</code>: Surrounds the text with **, making it bold.
+    - <code>-italic</code> or <code>-i</code>: Surrounds the text with _, making it italic.
+    - <code>-underline</code> or <code>-u</code>: Surrounds the text with __, making it underlined.
+    - <code>-kill</code> or <code>-k</code>: Surrounds the text with ~~, making it struckthrough.
+
+  - The order the options are applied is the order they're listed; e.g., using all four at once results in \~\~\_\_\_\*\*text\*\*\_\_\_\~\~.
+
 - dm
   - DMs the user the list, leaving markdown intact.
+  - Has option arguments:
+    - <code>-raw</code> or <code>-r</code>: Escapes markdown characters (\\_*~:|">`)
 - help
   - Sends a help menu to the current channel, listing all commands.
 
