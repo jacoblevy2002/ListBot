@@ -17,12 +17,9 @@ LOG_FILE = "./Lot.log"
 
 
 def log_message(message):
-    try:
-        file = open(LOG_FILE, 'a')
-        file.write(f"\n{datetime.now()} | {message}")
-    finally:
-        if not file.closed:
-            file.close()
+    message = message.encode('utf8')
+    with open(LOG_FILE, 'a') as f:
+        f.write(f"\n{datetime.now()} | {str(message)}")
 
 
 def log(channel: str, category: str, command: str, author: str, arguments: list[str] = []):
@@ -153,7 +150,7 @@ async def find_all_bot_messages(ctx: discord.TextChannel, clear_what: str = "lis
     async for x in ctx.history():
         match_text = not x.content.startswith("ERROR: ") and not x.content.startswith(
             "**__ListBot Help Menu") and not x.content.startswith("LIST LINE COUNT: ") and not x.content.startswith(
-            "**Replaceable text found in the following channels:**")
+            "**Replaceable text found in the following channels:**") and not x.content.startswith("**Beginning search")
         match_author = x.author == bot.user
         match = False
 
@@ -217,7 +214,7 @@ NOTE: To use any multi-word arguments, they MUST be wrapped in ". To use `"` ins
     `-all` or `-a`: All matches will be removed"""
                    )
     await ctx.send("""**__ListBot Help Menu P2:__**
-`replace_allincategory ARGUMENT1 ARGUMENT2`: Runs a `replace_all` in every channel in the current category, and summarizes which ones found a match. WARNING: Can get spammy
+`replaceallincategory ARGUMENT1 ARGUMENT2`: Runs a `replaceall` in every channel in the current category, and summarizes which ones found a match. WARNING: Can get spammy
 `replacenum NUM ARG1`: Replaces the line at the specified number with the given `ARG1`
 `dm`: DMs the user the list
   `-raw` or `-r`: Escapes markdown characters. List of characters that are escaped is (`\, _, *, ~, :, |, ", >`, \`)
@@ -385,14 +382,15 @@ async def getnum_lines(ctx):
 
 
 @bot.command()
-async def replace_all(ctx, arg1, arg2=""):
-    log(ctx.channel, ctx.channel.category, 'replace_all', ctx.author, [arg1, arg2])
+async def replaceall(ctx, arg1, arg2=""):
+    log(ctx.channel, ctx.channel.category, 'replaceall', ctx.author, [arg1, arg2])
     await send_list(ctx, await find_all_bot_messages(ctx.channel), to_add=arg2, to_find=arg1, replace_all=True)
 
 
 @bot.command()
-async def replace_allincategory(ctx, arg1, arg2):
-    log(ctx.channel, ctx.channel.category, 'replace_allincategory', ctx.author, [arg1, arg2])
+async def replaceallincategory(ctx, arg1, arg2):
+    log(ctx.channel, ctx.channel.category, 'replaceallincategory', ctx.author, [arg1, arg2])
+    await ctx.send("**Beginning search...**")
     category = ctx.channel.category
     if not isinstance(category, discord.CategoryChannel):  # if not in a category
         msg = "ERROR: This text channel is not in a category"
