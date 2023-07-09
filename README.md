@@ -56,6 +56,9 @@ Unless otherwise specified, anything involving finding text (such as +add <code>
     - <code>-raw</code> or <code>-r</code>: Escapes markdown characters (\\_*~:|">`)
 - help
   - Sends a help menu to the current channel, listing all commands.
+- copyto <code>arg1</code>
+  - Copies the current list to another channel, specified by channel ID (<code>arg1</code>)
+
 
 ## Future Plans
 - Transition to slash commands

@@ -197,7 +197,7 @@ NOTE: To use any multi-word arguments, they MUST be wrapped in ". To use `"` ins
     `-above` or `-aa`: The line will be added above the match instead of below
     `-all`: The line will be added under all matches
 `addundernum NUM ARGUMENT`: Adds `ARGUMENT` under line #`NUM`.
-`getnum_lines`: Replies with the number of lines in the list
+`getnumlines`: Replies with the number of lines in the list
 `remove ARGUMENT1`: Removes the line beginning with `ARGUMENT1`. Will only remove one line, and fails if more than one line matches the specified `ARGUMENT1`. Adding "true" as a second argument will only match with full line matches.
   Further arguments can be added, as listed here:
     `-full` or `-f`: Matches will only respond to full lines
@@ -217,7 +217,7 @@ NOTE: To use any multi-word arguments, they MUST be wrapped in ". To use `"` ins
 `replaceallincategory ARGUMENT1 ARGUMENT2`: Runs a `replaceall` in every channel in the current category, and summarizes which ones found a match. WARNING: Can get spammy
 `replacenum NUM ARG1`: Replaces the line at the specified number with the given `ARG1`
 `dm`: DMs the user the list
-  `-raw` or `-r`: Escapes markdown characters. List of characters that are escaped is (`\, _, *, ~, :, |, ", >`, \`)
+  `-raw` or `-r`: Escapes markdown characters. List of characters that are escaped is (`\, _, *, ~, :, |, ", >, -`, \`)
 `effect` ARG1 OPTIONS: Applies an effect to the supplied text. See below for options.
   `-bold` or `-b`: Surrounds the text with \*\*, making it bold.
   `-italic` or `-i`: Surrounds the text with \_, making it italic.
@@ -332,7 +332,7 @@ async def dm(ctx, *args):
     else:
         for x in my_messages:
             to_send = x.content.replace("\\", "\\\\").replace("_", "\_").replace("*", "\*").replace("~", "\~").replace(
-                "`", "\`").replace(":", "\:").replace("|", "\|").replace('"', '\\\\"').replace('\n>', '\n\>')
+                "`", "\`").replace(":", "\:").replace("|", "\|").replace('"', '\\\\"').replace('\n>', '\n\>').replace('-', '\-')
             if to_send.startswith(">"):
                 to_send = '\\' + to_send
             # Not technically required, but it's faster to perform an if statement then run the function for no reason
@@ -376,8 +376,8 @@ async def addabovenum(ctx, arg1: int, arg2):
 
 
 @bot.command()
-async def getnum_lines(ctx):
-    log(ctx.channel, ctx.channel.category, 'getnum_lines', ctx.author)
+async def getnumlines(ctx):
+    log(ctx.channel, ctx.channel.category, 'getnumlines', ctx.author)
     await ctx.send("LIST LINE COUNT: " + str(get_lines_in_list(await find_all_bot_messages(ctx.channel))))
 
 
@@ -403,7 +403,6 @@ async def replaceallincategory(ctx, arg1, arg2):
     not_channels = []
 
     for x in category.channels:
-        # print("Starting channel " + x.name)
         my_messages = await find_all_bot_messages(x)
         test_string = "\n".join(i.content for i in my_messages)
         if arg1 in test_string:
@@ -424,6 +423,25 @@ async def replaceallincategory(ctx, arg1, arg2):
             await message_over_limit(output, ctx.channel)
         else:
             await ctx.send(output)
+
+
+@bot.command()
+async def copyto(ctx, arg1):
+    log(ctx.channel, ctx.channel.category, 'copyto', ctx.author, [arg1])
+    msg = "ERROR: Invalid channel ID."
+    try:
+        arg1 = int(arg1)
+    except ValueError:
+        log_message(msg)
+        await ctx.send(msg)
+        return
+
+    channel = bot.get_channel(arg1)
+    if channel is None:
+        log_message(msg)
+        await ctx.send(msg)
+    else:
+        await send_list(channel, await find_all_bot_messages(ctx))
 
 
 bot.run(TOKEN)
