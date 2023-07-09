@@ -58,7 +58,8 @@ def set_save_to(save_to, val):
 
 async def send_list(channel, bot_messages, to_add="", to_find="", remove_or_replace: bool = False,
                     full_line_check: bool = False, add_above: bool = False, index_to_add: int = -1,
-                    replace_all: bool = False, index_to_change: int = -1, allow_multiple_matches: bool = False):
+                    replace_all: bool = False, index_to_change: int = -1, allow_multiple_matches: bool = False,
+                    delete_list: bool = True):
     total_list = []
     for i in bot_messages:
         total_list.extend(i.content.split("\n"))
@@ -135,7 +136,8 @@ async def send_list(channel, bot_messages, to_add="", to_find="", remove_or_repl
     else:
         await channel.send(new_msg)
 
-    await delete_messages(bot_messages)  # Delete previous list messages
+    if delete_list:
+        await delete_messages(bot_messages)  # Delete previous list messages
     if not isinstance(channel, discord.TextChannel):
         await channel.message.delete()  # Delete the command message if ctx is passed
 
@@ -224,6 +226,7 @@ NOTE: To use any multi-word arguments, they MUST be wrapped in ". To use `"` ins
   `-underline` or `-u`: Surrounds the text with \_\_, making it underlined.
   `-kill` or `-k`: Surrounds the text with \~\~, making it struckthrough.
   The order the options are applied is the order they're listed; e.g., using all four at once results in `~~___**text**___~~`.
+`copyto` ARG1: Copies the current list to a specified channel. Channel should be specified using the channel ID.
 """
                    )
 
@@ -441,7 +444,7 @@ async def copyto(ctx, arg1):
         log_message(msg)
         await ctx.send(msg)
     else:
-        await send_list(channel, await find_all_bot_messages(ctx))
+        await send_list(channel, await find_all_bot_messages(ctx), delete_list = False)
 
 
 bot.run(TOKEN)
