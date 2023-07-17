@@ -219,7 +219,7 @@ NOTE: To use any multi-word arguments, they MUST be wrapped in ". To use `"` ins
 `replaceallincategory ARGUMENT1 ARGUMENT2`: Runs a `replaceall` in every channel in the current category, and summarizes which ones found a match. WARNING: Can get spammy
 `replacenum NUM ARG1`: Replaces the line at the specified number with the given `ARG1`
 `dm`: DMs the user the list
-  `-raw` or `-r`: Escapes markdown characters. List of characters that are escaped is (`\, _, *, ~, :, |, ", >, -`, \`)
+  `-raw` or `-r`: Escapes markdown characters. List of characters that are escaped is (`\_*~:|">-#.`\`)
 `effect` ARG1 OPTIONS: Applies an effect to the supplied text. See below for options.
   `-bold` or `-b`: Surrounds the text with \*\*, making it bold.
   `-italic` or `-i`: Surrounds the text with \_, making it italic.
@@ -334,10 +334,10 @@ async def dm(ctx, *args):
             await ctx.author.send(x.content)
     else:
         for x in my_messages:
-            to_send = x.content.replace("\\", "\\\\").replace("_", "\_").replace("*", "\*").replace("~", "\~").replace(
-                "`", "\`").replace(":", "\:").replace("|", "\|").replace('"', '\\\\"').replace('\n>', '\n\>').replace('-', '\-')
-            if to_send.startswith(">"):
-                to_send = '\\' + to_send
+            escape_chars = ['_', '*', '~', '`', ':', '|', '>', '-', '#', '.']
+            to_send = x.content.replace("\\", "\\\\").replace('"', '\\\\"')
+            for i in escape_chars:
+                to_send = to_send.replace(i, '\\' + i)
             # Not technically required, but it's faster to perform an if statement then run the function for no reason
             if len(to_send) > MESSAGE_LENGTH:
                 await message_over_limit(to_send, ctx.author)

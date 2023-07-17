@@ -53,7 +53,7 @@ Unless otherwise specified, anything involving finding text (such as +add <code>
 - dm
   - DMs the user the list, leaving markdown intact.
   - Has option arguments:
-    - <code>-raw</code> or <code>-r</code>: Escapes markdown characters (\\_*~:|">`)
+    - <code>-raw</code> or <code>-r</code>: Escapes markdown characters (\\_*~:|">`#.)
 - help
   - Sends a help menu to the current channel, listing all commands.
 - copyto <code>arg1</code>
