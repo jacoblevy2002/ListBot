@@ -22,8 +22,15 @@ def log_message(message):
         f.write(f"\n{datetime.now()} | {str(message)}")
 
 
-def log(channel: str, category: str, command: str, author: str, arguments: list[str] = []):
+def log(ctx, command: str, arguments: list[str] = []):
     """ Log activity to the .log file """
+    category = "N/A"
+    try:
+        category = ctx.channel.category
+    except:
+        pass
+    channel = ctx.channel
+    author = ctx.author
     log_message(
         f"Command executed: {command} | Channel: {channel} (Category: {category}) | Arguments: {arguments} | Executed by: {author}")
 
@@ -138,8 +145,11 @@ async def send_list(channel, bot_messages, to_add="", to_find="", remove_or_repl
 
     if delete_list:
         await delete_messages(bot_messages)  # Delete previous list messages
-    if not isinstance(channel, discord.TextChannel):
-        await channel.message.delete()  # Delete the command message if ctx is passed
+    try:
+        if not isinstance(channel, discord.TextChannel):
+            await channel.message.delete()  # Delete the command message if ctx is passed
+    except:
+        pass
 
 
 async def delete_messages(messages):
@@ -186,7 +196,7 @@ async def on_command_error(ctx, error):
 
 @bot.command()
 async def help(ctx):
-    log(ctx.channel, ctx.channel.category, 'help', ctx.author)
+    log(ctx, 'help')
     await ctx.send("""**__ListBot Help Menu P1:__**
 To trigger any ListBot commands, begin your message with the `+` symbol
   
@@ -233,7 +243,7 @@ NOTE: To use any multi-word arguments, they MUST be wrapped in ". To use `"` ins
 
 @bot.command()
 async def add(ctx, arg1, *args):
-    log(ctx.channel, ctx.channel.category, 'add', ctx.author, [arg1, *args])
+    log(ctx, 'add', [arg1, *args])
     keywords = ["-full", "-f", "-above", "-aa", "-all"]
     key = False
     to_find = ""
@@ -252,7 +262,7 @@ async def add(ctx, arg1, *args):
 
 @bot.command()
 async def remove(ctx, arg1, *args):
-    log(ctx.channel, ctx.channel.category, 'remove', ctx.author, [arg1, *args])
+    log(ctx, 'remove', [arg1, *args])
     match_full = "-full" in args or "-f" in args
     allow_multiple = "-all" in args or "-a" in args
     await send_list(ctx, await find_all_bot_messages(ctx.channel), to_find=arg1, remove_or_replace=True,
@@ -261,7 +271,7 @@ async def remove(ctx, arg1, *args):
 
 @bot.command()
 async def clear(ctx, arg1: str = "list"):
-    log(ctx.channel, ctx.channel.category, 'clear', ctx.author, [arg1])
+    log(ctx, 'clear', [arg1])
     arg1 = arg1.lower()
     if arg1 == "-status" or arg1 == "-s":
         arg1 = "status"
@@ -272,14 +282,14 @@ async def clear(ctx, arg1: str = "list"):
 
 @bot.command()
 async def removewhite(ctx):
-    log(ctx.channel, ctx.channel.category, 'removewhite', ctx.author)
+    log(ctx, 'removewhite')
     await send_list(ctx, await find_all_bot_messages(ctx.channel), to_find="", full_line_check=True,
                     allow_multiple_matches=True, remove_or_replace=True)
 
 
 @bot.command()
 async def replace(ctx, arg1, arg2, *args):
-    log(ctx.channel, ctx.channel.category, 'replace', ctx.author, [arg1, arg2, *args])
+    log(ctx, 'replace', [arg1, arg2, *args])
     match_full = "-full" in args or "-f" in args
     allow_multiple = "-all" in args or "-a" in args
     await send_list(ctx, await find_all_bot_messages(ctx.channel), to_add=arg2, to_find=arg1, remove_or_replace=True,
@@ -288,7 +298,7 @@ async def replace(ctx, arg1, arg2, *args):
 
 @bot.command()
 async def effect(ctx, arg1, *args):
-    log(ctx.channel, ctx.channel.category, 'effect', ctx.author, [arg1, *args])
+    log(ctx, 'effect', [arg1, *args])
     bold = '-bold' in args or '-b' in args
     italic = '-italic' in args or '-i' in args
     underline = '-underline' in args or '-u' in args
@@ -310,7 +320,7 @@ async def effect(ctx, arg1, *args):
 
 @bot.command()
 async def replacenum(ctx, arg1: int, arg2):
-    log(ctx.channel, ctx.channel.category, 'replacenum', ctx.author, [arg1, arg2])
+    log(ctx, 'replacenum', [arg1, arg2])
     my_messages = await find_all_bot_messages(ctx.channel)
     num_lines = get_lines_in_list(my_messages)
 
@@ -326,7 +336,7 @@ async def replacenum(ctx, arg1: int, arg2):
 
 @bot.command()
 async def dm(ctx, *args):
-    log(ctx.channel, ctx.channel.category, 'dm', ctx.author, args)
+    log(ctx, 'dm', args)
     my_messages = await find_all_bot_messages(ctx.channel)
     raw = "-raw" in args or '-r' in args
     if not raw:
@@ -347,13 +357,13 @@ async def dm(ctx, *args):
 
 @bot.command()
 async def removenum(ctx, arg1: int):
-    log(ctx.channel, ctx.channel.category, 'removenum', ctx.author, [arg1])
+    log(ctx, 'removenum', [arg1])
     await replacenum(ctx, arg1, "")
 
 
 @bot.command()
 async def addundernum(ctx, arg1: int, arg2):
-    log(ctx.channel, ctx.channel.category, 'addundernum', ctx.author, [arg1, arg2])
+    log(ctx, 'addundernum', [arg1, arg2])
     my_messages = await find_all_bot_messages(ctx.channel)
     num_lines = get_lines_in_list(my_messages)
 
@@ -374,25 +384,25 @@ async def addundernum(ctx, arg1: int, arg2):
 
 @bot.command()
 async def addabovenum(ctx, arg1: int, arg2):
-    log(ctx.channel, ctx.channel.category, 'addabovenum', ctx.author, [arg1, arg2])
+    log(ctx, 'addabovenum', [arg1, arg2])
     await addundernum(ctx, arg1 - 1, arg2)
 
 
 @bot.command()
 async def getnumlines(ctx):
-    log(ctx.channel, ctx.channel.category, 'getnumlines', ctx.author)
+    log(ctx, 'getnumlines')
     await ctx.send("LIST LINE COUNT: " + str(get_lines_in_list(await find_all_bot_messages(ctx.channel))))
 
 
 @bot.command()
 async def replaceall(ctx, arg1, arg2=""):
-    log(ctx.channel, ctx.channel.category, 'replaceall', ctx.author, [arg1, arg2])
+    log(ctx, 'replaceall', [arg1, arg2])
     await send_list(ctx, await find_all_bot_messages(ctx.channel), to_add=arg2, to_find=arg1, replace_all=True)
 
 
 @bot.command()
 async def replaceallincategory(ctx, arg1, arg2):
-    log(ctx.channel, ctx.channel.category, 'replaceallincategory', ctx.author, [arg1, arg2])
+    log(ctx, 'replaceallincategory', [arg1, arg2])
     await ctx.send("**Beginning search...**")
     category = ctx.channel.category
     if not isinstance(category, discord.CategoryChannel):  # if not in a category
@@ -430,7 +440,7 @@ async def replaceallincategory(ctx, arg1, arg2):
 
 @bot.command()
 async def copyto(ctx, arg1):
-    log(ctx.channel, ctx.channel.category, 'copyto', ctx.author, [arg1])
+    log(ctx, 'copyto', [arg1])
     msg = "ERROR: Invalid channel ID."
     try:
         arg1 = int(arg1)
