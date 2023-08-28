@@ -140,7 +140,7 @@ async def send_list(channel, bot_messages, to_add="", to_find="", remove_or_repl
     new_msg = new_msg.replace(to_find, to_add) if replace_all else new_msg
     if len(new_msg) > MESSAGE_LENGTH:
         await message_over_limit(new_msg, channel)
-    else:
+    elif new_msg != "":
         await channel.send(new_msg)
 
     if delete_list:
