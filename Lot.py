@@ -77,7 +77,7 @@ async def send_list(channel, bot_messages, to_add="", to_find="", remove_or_repl
         # x = -1  # starts at -1 so that first value is 0
         for i in range(len(total_list)):  # for each line in list
             # x += 1  # in Python it seems you cant manually change i for some reason? so im using a counter x instead
-            match = total_list[i].startswith(to_find) if not full_line_check else total_list[x] == to_find
+            match = total_list[i].startswith(to_find) if not full_line_check else total_list[i] == to_find
             if match:  # if current line is the one to add under / replace
                 if save_to == -1 or allow_multiple_matches:  # if -1 then first match
                     save_to = set_save_to(save_to, i + 1)  # set save_to to the save index
